@@ -2,7 +2,6 @@ import nfqueue
 from scapy.all import *
 import argparse
 
-
 def spoof_dns(packet, spoof_website, redirect_website):
     scapy_packet = IP(packet.get_data())
 
@@ -29,7 +28,6 @@ def spoof_dns(packet, spoof_website, redirect_website):
     else:
         packet.set_verdict(nfqueue.NF_ACCEPT)
 
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--spoof", dest="spoof_website", help="Specify a website to spoof")
@@ -37,8 +35,7 @@ def main():
     args = parser.parse_args()
 
     if not args.spoof_website or not args.redirect_website:
-        parser.error(
-            "[-] Please specify both the website to spoof and the redirect website. Use --help for more details.")
+        parser.error("[-] Please specify both the website to spoof and the redirect website. Use --help for more details.")
 
     q = nfqueue.queue()
     q.open()
@@ -50,10 +47,9 @@ def main():
         q.try_run()
     except KeyboardInterrupt:
         print("\n[+] Detected CTRL+C, Exiting...")
-
+    
     q.unbind()
     q.close()
-
 
 if __name__ == '__main__':
     main()

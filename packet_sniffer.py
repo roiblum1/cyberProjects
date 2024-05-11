@@ -44,5 +44,5 @@ def main():
     sniff(options.interface)
 
 
-if __name__ == '__packet_sniffer__':
+if __name__ == '__main__':
     main()
