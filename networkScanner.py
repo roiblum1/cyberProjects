@@ -4,8 +4,15 @@ import argparse
 
 
 def get_ip():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-r", "--range", dest="ipaddr", help="Specify an IP Address or a range of IP Addresses")
+    parser = argparse.ArgumentParser(
+        description="A simple network scanner to find IP and MAC addresses.",
+        epilog="Example usage: python3 networkScanner.py -r 192.168.1.0/24"
+    )
+    parser.add_argument(
+        "-r", "--range",
+        dest="ipaddr",
+        help="Specify an IP Address or a range of IP Addresses"
+    )
     options = parser.parse_args()
 
     if not options.ipaddr:

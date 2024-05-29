@@ -34,7 +34,10 @@ def process_sniffed_packet(packet):
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="A simple packet sniffer script to capture HTTP requests and possible login information.",
+        epilog="Example usage: python3 packet_sniffer.py -i eth0"
+    )
     parser.add_argument("-i", "--interface", dest="interface", help="Specify the interface to capture packets")
     options = parser.parse_args()
 
@@ -42,6 +45,7 @@ def main():
         parser.error("[-] Please specify an interface to capture packets. Use the --help flag for more details.")
 
     sniff(options.interface)
+
 
 
 if __name__ == '__main__':

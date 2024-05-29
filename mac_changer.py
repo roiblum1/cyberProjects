@@ -16,8 +16,13 @@ def macchanger(interface, macaddr):
     print("[+] Changing Mac Address of Interface {} to {}".format(interface, macaddr))
 
 
+
 def get_argument():
-    parser = optparse.OptionParser()
+    parser = optparse.OptionParser(
+        usage="usage: %prog -i INTERFACE -m NEW_MAC",
+        description="A simple MAC address changer script.",
+        epilog="Example usage: python3 macchanger.py -i eth0 -m 00:11:22:33:44:55"
+    )
     # Define the command-line options for interface and new MAC address
     parser.add_option("-i", "--interface", dest="interface", help="Interface to change the MAC address")
     parser.add_option("-m", "--mac", dest="new_mac", help="New MAC address")
@@ -27,7 +32,7 @@ def get_argument():
     if not options.interface or not options.new_mac:
         # Display an error message if both the interface and new MAC address are not provided
         parser.error(
-            "[-] Specify both the interface and new MAC address. Use python macchanger --help for more details.")
+            "[-] Specify both the interface and new MAC address. Use python3 macchanger.py --help for more details.")
 
     return options
 
