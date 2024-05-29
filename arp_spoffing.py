@@ -9,7 +9,7 @@ import argparse
 def get_ip():
     parser = argparse.ArgumentParser(
         description="ARP Spoofing Script",
-        epilog="Example usage: python3 arp_spoof.py -t 192.168.1.10 -s 192.168.1.1"
+        epilog="Example usage: python3 arp_spoffing.py -t 192.168.1.10 -s 192.168.1.1"
     )
     parser.add_argument("-t", "--target", dest="victim", help="Specify Victim IP address")
     parser.add_argument("-s", "--spoof", dest="spoof", help="Specify Spoofing IP address")
@@ -66,3 +66,7 @@ def main():
         print("\n[+] Detected CTRL+C. Quitting and restoring ARP values, please wait.")
         restore(target_ip, target_mac, gateway_ip, gateway_mac)
         restore(gateway_ip, gateway_mac, target_ip, target_mac)
+
+
+if __name__ == '__main__':
+    main()
